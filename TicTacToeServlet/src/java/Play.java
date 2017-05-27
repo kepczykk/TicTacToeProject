@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -63,12 +62,12 @@ public class Play extends HttpServlet {
                     ip2 = request.getParameter("ip2");
                 }
                 if(flag == 0){
-                    if(checkIfWin(addPoint(ip1, "O", "X"))){
+                    if(checkIfWin(addPoint(ip1, "O"))){
                         win = true;
                     }
                     flag = 1;
                 }else{
-                    if(checkIfWin(addPoint(ip2, "X", "O"))){
+                    if(checkIfWin(addPoint(ip2, "X"))){
                         win = true;
                     }
                     flag = 0;
@@ -125,12 +124,12 @@ public class Play extends HttpServlet {
     private void autoSolver(){
         while(!win){
             if(flag == 0){
-                if(checkIfWin(addPoint(ip1, "O", "X"))){
+                if(checkIfWin(addPoint(ip1, "O"))){
                     win = true;
                 }
                 flag = 1;
             }else{
-                if(checkIfWin(addPoint(ip2, "X", "O"))){
+                if(checkIfWin(addPoint(ip2, "X"))){
                     win = true;
                 }
                 flag = 0;
@@ -186,10 +185,10 @@ public class Play extends HttpServlet {
     
     
     
-    private PointXO addPoint(String ip, String xo, String xo1){
+    private PointXO addPoint(String ip, String xo){
         PointXO p = null;
         try {
-            URL url = new URL("http://" + ip + "/TicTacToeRest/rest/"+ points.get(points.size() - 1).x +"/"+ points.get(points.size() - 1).y);
+            URL url = new URL("http://" + ip + points.get(points.size() - 1).x +"/"+ points.get(points.size() - 1).y);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             
@@ -202,10 +201,7 @@ public class Play extends HttpServlet {
                     (conn.getInputStream())));
             String[] coords = br.readLine().split(" ");
             p = new PointXO(Integer.valueOf(coords[0]),Integer.valueOf(coords[1]), xo);
-            PointXO p2 = new PointXO(Integer.valueOf(coords[0]),Integer.valueOf(coords[1]), xo1);
-            if(!points.contains(p) && !points.contains(p2)){
-                points.add(p);
-            }
+            points.add(p);
             conn.disconnect();
         } catch (MalformedURLException ex) {
             Logger.getLogger(Play.class.getName()).log(Level.SEVERE, null, ex);
@@ -218,7 +214,7 @@ public class Play extends HttpServlet {
     
     private void reset(String ip){
         try {
-            URL url = new URL("http://" + ip + "/TicTacToeRest/rest/reset");
+            URL url = new URL("http://" + ip + "reset");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             
