@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import static java.lang.Math.abs;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -53,6 +54,10 @@ public class Play extends HttpServlet {
             points.add(new PointXO());
         }
         
+        if(request.getParameter("reset")!=null){
+            resetParam();
+        }
+        
         if (request.getParameter("autoSolver") != null) {
             autoSolver();
         }else{
@@ -60,14 +65,19 @@ public class Play extends HttpServlet {
                 if(ip1 == null && ip2 == null){
                     ip1 = request.getParameter("ip1");
                     ip2 = request.getParameter("ip2");
+                    reset(ip1);
+                    reset(ip2);
                 }
                 if(flag == 0){
-                    if(checkIfWin(addPoint(ip1, "O"))){
+                    if(checkIfWin(addPoint(ip2, "O"))){
                         win = true;
                     }
                     flag = 1;
                 }else{
-                    if(checkIfWin(addPoint(ip2, "X"))){
+//                    if(checkIfWin(winAlgorithm("X", "O"))){
+//                        win = true;
+//                    }
+                    if(checkIfWin(addPoint(ip1, "X"))){
                         win = true;
                     }
                     flag = 0;
@@ -83,7 +93,7 @@ public class Play extends HttpServlet {
             out.println("</head>");
             out.println("<body>");
             
-            
+           
             if(!playing){
                 out.println("<form action='/TicTacToeServlet/Play' method='POST'>" +
                 "Player 1:\n" +
@@ -94,6 +104,8 @@ public class Play extends HttpServlet {
                 "</form>");
                 playing = true;
             }else{
+                out.println(ip1 + " - X<br/>");
+                out.println(ip2 + " - O<br/>");
                 if(!win){
                     out.println("<a href='/TicTacToeServlet/Play'><button>Next move</button></a>");
                     out.println("<form action='/TicTacToeServlet/Play' method='post'>" +
@@ -103,33 +115,44 @@ public class Play extends HttpServlet {
                 out.println(getTable());
                 
                 if(win){
-                    out.println("Player " + (!wonPoints.get(0).xo.equals("X") ? 1 : 2) + " wins!");
+                    out.println("Player " + (wonPoints.get(0).xo.equals("X") ? 1 : 2) + " wins!");
                     
-                    points.clear();
-                    flag = 0;
-                    playing = false;
-                    win = false;
-                    wonPoints.clear();
-                    reset(ip1);
-                    reset(ip2);
-                    ip1 = null;
-                    ip2 = null;
+                    resetParam();
                 }
+            } 
+            for(PointXO p : points){
+                out.println(p.x + " " + p.y + " " + p.xo + "<br/>");
             }
+            
             out.println("</body>");
             out.println("</html>");
         }
     }
     
+    void resetParam(){
+            points.clear();
+            flag = 0;
+            playing = false;
+            win = false;
+            wonPoints.clear();
+            reset(ip1);
+            reset(ip2);
+            ip1 = null;
+            ip2 = null;
+            cnt=0;
+            cnt2=0;
+    }
+    
+    
     private void autoSolver(){
         while(!win){
             if(flag == 0){
-                if(checkIfWin(addPoint(ip1, "O"))){
+                if(checkIfWin(addPoint(ip2, "O"))){
                     win = true;
                 }
                 flag = 1;
             }else{
-                if(checkIfWin(addPoint(ip2, "X"))){
+                if(checkIfWin(addPoint(ip1, "X"))){
                     win = true;
                 }
                 flag = 0;
@@ -228,6 +251,24 @@ public class Play extends HttpServlet {
         } catch (IOException ex) {
             Logger.getLogger(Play.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    static int cnt = -1;
+    private PointXO winAlgorithm(String xo,String xo1){
+        PointXO p = null;
+        boolean f = true;
+        while(f){
+            p = new PointXO(cnt,cnt,xo);
+            PointXO p2 = new PointXO(cnt,cnt,xo1);
+            if(!points.contains(p) && !points.contains(p2)){
+                points.add(p);
+                f = false;
+            }else{
+                cnt--;
+            }
+        }
+        cnt--;
+        return p;
     }
     
     
